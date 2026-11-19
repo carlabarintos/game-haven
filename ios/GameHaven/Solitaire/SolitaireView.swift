@@ -271,6 +271,24 @@ private struct CardTable: View {
     @Environment(\.highContrast) private var highContrast
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    // Its own function so older compilers can type-check the board in time.
+    // Measured on the screen, not the card, which moves under the finger and would make the drag jitter.
+    private func drag(_ item: Placed, target: @escaping (CGPoint) -> SolitaireGame.Target?) -> some Gesture {
+        DragGesture(minimumDistance: 8, coordinateSpace: .global).onChanged { v in
+            guard let spot = item.spot else { return }
+            if dragging == nil {
+                let ids = Set(game.cards(at: spot).map(\.id))
+                guard !ids.isEmpty else { return }  // face-down cards stay put
+                dragging = (ids, .zero)
+            }
+            dragging?.by = v.translation
+        }.onEnded { v in
+            guard let spot = item.spot, dragging != nil else { return }
+            dragging = nil  // lands, or jumps back, at once
+            drop(spot, target(CGPoint(x: item.at.x + v.translation.width, y: item.at.y + v.translation.height)))
+        }
+    }
+
     private struct Placed: Identifiable {
         let card: Card
         let at: CGPoint
@@ -325,20 +343,7 @@ private struct CardTable: View {
                         .modifier(Shake(count: CGFloat(shakes[item.card.id] ?? 0)))
                         .shadow(color: Theme.ink.opacity(lifted ? 0.4 : 0), radius: 6, y: 4)
                         .onTapGesture { item.spot.map { tap($0, item.card.id) } ?? turn() }
-                        // Measured on the screen, not the card, which moves under the finger and would make the drag jitter.
-                        .gesture(DragGesture(minimumDistance: 8, coordinateSpace: .global).onChanged { v in
-                            guard let spot = item.spot else { return }
-                            if dragging == nil {
-                                let ids = Set(game.cards(at: spot).map(\.id))
-                                guard !ids.isEmpty else { return }  // face-down cards stay put
-                                dragging = (ids, .zero)
-                            }
-                            dragging?.by = v.translation
-                        }.onEnded { v in
-                            guard let spot = item.spot, dragging != nil else { return }
-                            dragging = nil  // lands, or jumps back, at once
-                            drop(spot, target(CGPoint(x: item.at.x + v.translation.width, y: item.at.y + v.translation.height)))
-                        })
+                        .gesture(drag(item, target: target))
                         .accessibilityElement(children: .ignore)
                         .accessibilityLabel(item.label ?? "")
                         .accessibilityValue(marked.contains(item.card.id) ? "picked up" : "")

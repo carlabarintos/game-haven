@@ -424,13 +424,16 @@ private struct Burst: View {
     var body: some View {
         ZStack {
             ForEach(0..<count, id: \.self) { k in
-                let a = Double(k) / Double(count) * 2 * .pi + Double(k % 3) * 0.2
-                let reach = radius * (0.55 + 0.45 * Double(k % 4) / 3)
+                // Typed parts, so older compilers can type-check this in time.
+                let a: Double = Double(k) / Double(count) * 2 * .pi + Double(k % 3) * 0.2
+                let reach: CGFloat = radius * CGFloat(0.55 + 0.45 * Double(k % 4) / 3)
+                let dx: CGFloat = out ? CGFloat(cos(a)) * reach : 0
+                let dy: CGFloat = out ? CGFloat(sin(a)) * reach + radius * 0.25 : 0  // drifts down a little as it goes
                 Ellipse().fill(Self.colors[k % Self.colors.count])
                     .overlay(Ellipse().stroke(Theme.walnut.opacity(0.4), lineWidth: 0.5))
                     .frame(width: size, height: size * 0.6)
                     .rotationEffect(.radians(out ? a + 2 : a))
-                    .offset(x: out ? cos(a) * reach : 0, y: out ? sin(a) * reach + radius * 0.25 : 0)  // drifts down a little as it goes
+                    .offset(x: dx, y: dy)
                     .scaleEffect(out ? 0.5 : 1)
                     .opacity(out ? 0 : 1)
             }
