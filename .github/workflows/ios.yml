@@ -39,7 +39,12 @@ jobs:
           # -exportArchive signs for the App Store via the API key (cloud signing): no certs or profiles in secrets.
           xcodebuild archive -project GameHaven.xcodeproj -scheme GameHaven -configuration Release \
             -destination generic/platform=iOS -archivePath "$RUNNER_TEMP/GameHaven.xcarchive" "${auth[@]}" \
-            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGNING_ALLOWED=NO CURRENT_PROJECT_VERSION=${{ github.run_number }}
+            DEVELOPMENT_TEAM="$TEAM_ID" CODE_SIGNING_ALLOWED=NO CURRENT_PROJECT_VERSION="$(date -u +%y%m%d%H%M)"
+          # The unsigned archive leaves Google's frameworks with a linker ad-hoc signature whose identifier
+          # doesn't match the one export signs with, so App Store validation rejects them. Strip it first.
+          for f in "$RUNNER_TEMP"/GameHaven.xcarchive/Products/Applications/GameHaven.app/Frameworks/*.framework; do
+            codesign --remove-signature "$f"
+          done
           plutil -replace teamID -string "$TEAM_ID" ExportOptions.plist
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/GameHaven.xcarchive" \
             -exportOptionsPlist ExportOptions.plist -exportPath "$RUNNER_TEMP/out" "${auth[@]}"
