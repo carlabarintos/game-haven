@@ -27,5 +27,5 @@ xcrun simctl bootstatus "$device" -b >/dev/null
 # Xcode 27 shows simulators in DeviceHub; older Xcode has Simulator.app.
 open "$DEVELOPER_DIR/../Applications/DeviceHub.app" 2>/dev/null || open "$DEVELOPER_DIR/Applications/Simulator.app"
 xcrun simctl install "$device" .build/dd/Build/Products/Debug-iphonesimulator/GameHaven.app
-xcrun simctl launch "$device" com.gamehaven.GameHaven
+xcrun simctl launch "$device" com.carlabarintos.gamehaven
 echo "Game Haven is running. You can close this window."

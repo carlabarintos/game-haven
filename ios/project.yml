@@ -24,6 +24,8 @@ targets:
       - package: GoogleUserMessagingPlatform
     settings:
       base:
+        # Must match the App Store Connect app record; it can never change after the first upload.
+        PRODUCT_BUNDLE_IDENTIFIER: com.carlabarintos.gamehaven
         SWIFT_VERSION: "6.0"
         SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
         TARGETED_DEVICE_FAMILY: "1,2"
