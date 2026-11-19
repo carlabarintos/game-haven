@@ -1,0 +1,56 @@
+# Source of truth for the Xcode project. Run `xcodegen` here to (re)create GameHaven.xcodeproj.
+name: GameHaven
+options:
+  bundleIdPrefix: com.gamehaven
+  deploymentTarget:
+    iOS: "17.0"
+packages:
+  GoogleMobileAds:
+    url: https://github.com/googleads/swift-package-manager-google-mobile-ads
+    from: 13.13.0
+  GoogleUserMessagingPlatform:
+    url: https://github.com/googleads/swift-package-manager-google-user-messaging-platform
+    from: 3.1.0
+targets:
+  GameHaven:
+    type: application
+    platform: iOS
+    sources:
+      - GameHaven
+      - path: ../docs/privacy.html  # also published on GitHub Pages; one copy for both
+        buildPhase: resources
+    dependencies:
+      - package: GoogleMobileAds
+      - package: GoogleUserMessagingPlatform
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        SWIFT_DEFAULT_ACTOR_ISOLATION: MainActor
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        # Google's sample IDs, which only ever show test ads. Debug keeps them so our own taps can't get the account banned.
+        GAD_APP_ID: ca-app-pub-3940256099942544~1458002511
+        GAD_INTERSTITIAL_ID: ca-app-pub-3940256099942544/4411468910
+      configs:
+        # Paste the real AdMob app ID and interstitial unit ID here before submitting.
+        Release:
+          GAD_APP_ID: ca-app-pub-3607911339265372~1320298320
+          GAD_INTERSTITIAL_ID: ca-app-pub-3607911339265372/7644491539
+    info:
+      path: GameHaven/Info.plist
+      properties:
+        CFBundleDisplayName: Game Haven
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UISupportedInterfaceOrientations~ipad: [UIInterfaceOrientationPortrait, UIInterfaceOrientationPortraitUpsideDown]
+        GADApplicationIdentifier: $(GAD_APP_ID)
+        GADInterstitialID: $(GAD_INTERSTITIAL_ID)
+        NSUserTrackingUsageDescription: Allowing this lets us show ads that suit you better. Saying no still gives you the same games, and the same number of ads.
+        # shortcut: Google's own network only; add the full SKAdNetwork list when mediation is turned on.
+        SKAdNetworkItems:
+          - SKAdNetworkIdentifier: cstr6suwn9.skadnetwork
+    scheme:
+      # Lets Remove Ads be bought and restored in the simulator and Xcode runs, with no App Store Connect product.
+      storeKitConfiguration: GameHaven.storekit

@@ -1,0 +1,26 @@
+{
+  "identifier" : "9D1C7E52",
+  "nonRenewingSubscriptions" : [],
+  "products" : [
+    {
+      "displayPrice" : "9.99",
+      "familyShareable" : true,
+      "internalID" : "6F3A2B10",
+      "localizations" : [
+        {
+          "description" : "Pay once and never see an ad again.",
+          "displayName" : "Remove Ads",
+          "locale" : "en_AU"
+        }
+      ],
+      "productID" : "com.gamehaven.removeads",
+      "referenceName" : "Remove Ads",
+      "type" : "NonConsumable"
+    }
+  ],
+  "settings" : {
+    "_storefront" : "AUS"
+  },
+  "subscriptionGroups" : [],
+  "version" : { "major" : 4, "minor" : 0 }
+}
