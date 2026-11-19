@@ -1,10 +1,10 @@
 # Senior Games App: Plan & Ads Setup
 
-Nov 17, 2026 · @Carl
+Nov 17, 2026 · @Carl · updated Nov 19, 2026
 
 ## Summary
 
-We build one iOS app (Godot) with a bundle of calm, large-print puzzle and card games for people 55+, launching in Australia first, then the US, Canada, New Zealand and the UK. It is free with **light, player-friendly ads** (mostly opt-in rewarded ads, no ads mid-game), plus a one-time **Remove Ads** purchase at about A$9.99.
+We build one iOS app (native Swift and SwiftUI) with a bundle of calm, large-print puzzle and card games for people 55+, launching in Australia first, then the US, Canada, New Zealand and the UK. It is free with **light, player-friendly ads** (an occasional full-screen ad between games, never mid-game), plus a one-time **Remove Ads** purchase at A$0.99.
 
 - **Why this audience:** 67% of Australians 65+ play games, and card/board and puzzle are their top two genres. In the US, 49% of adults 50+ play, mostly on smartphones.
 - **Why this model:** ad complaints are common in reviews of the big free solitaire, jigsaw and mahjong apps. Paid, ad-free versions are praised for it. A clear "pay once, no ads" option is our angle.
@@ -48,7 +48,7 @@ Regional card-game popularity is well-known tradition, not survey data.
 
 Accessibility is the product, so build these in from day one and show them in the first App Store screenshot.
 
-- **Text size setting 100–200%.** Apple asks for text that can grow to at least 200%. Godot doesn't follow iOS Dynamic Type automatically, so add an in-game slider.
+- **Text size setting 100–200%.** Apple asks for text that can grow to at least 200%. The app follows the iPhone's text size and adds its own Smaller/Bigger buttons in Settings.
 - **Big cards, tiles and buttons.** Every control at least 44×44 pt; design cards and tiles at about 2× the usual size.
 - **High contrast.** Text contrast 4.5:1 (3:1 for 18 pt or bold). Offer a high-contrast theme.
 - **Never rely on colour alone.** Use shapes or symbols too, e.g. four-colour suits with clear symbols.
@@ -60,19 +60,19 @@ Accessibility is the product, so build these in from day one and show them in th
 
 ## Monetisation model
 
-Free to play with gentle ads, and one Remove Ads purchase that also unlocks everything. Ad rules are tuned so seniors can't tap an ad by accident.
+Free to play with gentle ads, and one Remove Ads purchase. Every game is free; nothing is locked. Ad rules are tuned so seniors can't tap an ad by accident.
 
 | Ad type | Where it shows | Rule |
 | --- | --- | --- |
-| Rewarded video | Player taps "Watch a short video for a free hint / extra deal / undo pack" | Always optional; the main earner |
-| Interstitial (full screen) | Only between games, never mid-game | At most 1 every 3 games or 4 minutes; none in the first session or first 3 games |
-| Banner | Bottom of menu screens only, not on the game board | Keep a clear gap from buttons; consider dropping it entirely |
+| Rewarded video (not built yet) | Player taps "Watch a short video for a free hint / extra deal / undo pack" | Always optional; the main earner |
+| Interstitial (full screen) | Only between games, never mid-game | At most 1 every 3 games and 4 minutes; none in the first session or first 3 games. **Built** (`AdRules.swift`) |
+| Banner (not built) | Bottom of menu screens only, not on the game board | Keep a clear gap from buttons; consider dropping it entirely |
 
 **In-app purchases (Apple IAP only)**
 
-| Product | Type | Price (AUD, suggested) | What it does |
+| Product | Type | Price (AUD) | What it does |
 | --- | --- | --- | --- |
-| Remove Ads + Unlock All | Non-consumable | A$9.99 | Removes banners and interstitials, unlocks every game; rewarded bonuses become free |
+| Remove Ads | Non-consumable, `com.sachiri.gamehaven.removeads` | A$0.99 (decided) | Removes all ads for good; Family Sharing on |
 | Hint pack (optional) | Consumable | A$2.99 | 50 hints, for players who don't want to watch ads |
 
 - Join Apple's **Small Business Program** so Apple takes 15% instead of 30%.
@@ -81,117 +81,98 @@ Free to play with gentle ads, and one Remove Ads purchase that also unlocks ever
 
 ## Ads setup, step by step
 
-Use Google AdMob with the [Poing Studios AdMob plugin](https://store.godotengine.org/asset/poingstudios/admob/) for Godot. It covers iOS and Android, banner, interstitial and rewarded ads, Google's consent tool (UMP), and mediation. Use v5.0.0: the newest v5.1.0 (Sept 2026) is marked unstable, and the plugin needs Godot 4.5+.
+The app uses Google's own iOS SDKs (Google Mobile Ads and User Messaging Platform) through Swift Package Manager, listed in `ios/project.yml`. There is no plugin to install.
 
-**A. AdMob account (one time)**
+**A. AdMob account (done)**
 
-1. Create an AdMob account at admob.google.com with the business Google account. Add payment details (bank account in AUD) and tax info.
-2. Add the app: platform iOS. You can add it before it's on the App Store and link the store listing later.
-3. Copy the **App ID** (format `ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy`).
-4. Create three **ad units**: one Rewarded, one Interstitial, one Banner. Copy each **ad unit ID**.
-5. In **Privacy & messaging**, create a GDPR consent message (EEA/UK/Switzerland) and a US state regulations message. Optionally add an IDFA explainer message shown before Apple's tracking prompt.
+1. AdMob account created; app **Game Haven** added for iOS.
+2. **App ID:** `ca-app-pub-3607911339265372~1320298320`
+3. **Interstitial unit "between games":** `ca-app-pub-3607911339265372/7644491539`. Leave the "real-time bidding on another mediation platform" box **unticked** when making units; an earlier unit made with it ticked (`…/7488578867`) can't serve AdMob ads and should be archived.
+4. [ ] In **Privacy & messaging**, create and publish a GDPR message (EEA/UK/Switzerland) and a US state regulations message.
 
-**B. Plugin in Godot**
+**B. Where the IDs live**
 
-1. In Godot's AssetLib, search "AdMob" by Poing Studios, then Download and Install.
-2. Enable it: Project → Project Settings → Plugins. It downloads the native iOS/Android files itself. If that fails: Project → Tools → AdMob Manager → iOS → Download & Install.
-3. Make sure the iOS template is in `res://ios/plugins`.
-4. Open `res://ios/plugins/poing-godot-admob-ads.gdip` and set `GADApplicationIdentifier` to your App ID.
-5. In Project → Export → iOS, tick the "Ad Mob" plugin. No manual Xcode or CocoaPods steps are needed.
-6. Check that the exported Info.plist has `SKAdNetworkItems`, starting with Google's `cstr6suwn9.skadnetwork`, plus `NSUserTrackingUsageDescription` (the text in Apple's tracking prompt).
+Both IDs are build settings in `ios/project.yml`. Debug builds use Google's test IDs; only the `Release:` block has the real ones, so testing from Xcode can't click live ads.
 
-**C. Code: the order matters**
+**C. Code (done, `ios/GameHaven/Ads.swift`)**
 
-1. On every launch, request consent info (UMP), and show the consent form if required.
-2. Only after consent: show the tracking (ATT) prompt, then initialise the ads SDK. Don't request ads until UMP says ads can be requested.
-3. Load a rewarded ad in the background. Show it only when the player taps "Watch video for a hint", and grant the reward in the reward callback, not when the ad closes.
-4. Load an interstitial and show it only on the "game finished" screen, under the frequency cap in Monetisation.
-5. Skip all banner and interstitial calls when the player owns Remove Ads.
-6. Add a "Privacy settings" button in Settings that reopens the consent form (Google requires one where consent applies).
+1. On every launch, request consent info (UMP) and show the form if required.
+2. Only after consent: show the tracking (ATT) prompt, then start the ads SDK.
+3. Load an interstitial and show it only when the player leaves the "game finished" screen, under the frequency cap in Monetisation.
+4. Skip all ad loading and showing when the player owns Remove Ads.
+5. Settings has a "Privacy settings" button that reopens the consent form where consent applies.
+6. Not built: rewarded "watch a video for a hint" and banners.
 
 **D. Test before release**
 
-- Use Google's test ad unit IDs until launch. Clicking your own live ads can get the AdMob account banned.
-
-| Format | iOS test ad unit ID |
-| --- | --- |
-| Banner (adaptive) | `ca-app-pub-3940256099942544/2435281174` |
-| Interstitial | `ca-app-pub-3940256099942544/4411468910` |
-| Rewarded | `ca-app-pub-3940256099942544/1712485313` |
-
+- Never tap ads in a Release or TestFlight build on your own phone; live clicks on your own ads can get the account banned. Use a Debug build from Xcode, which always shows test ads.
 - Test consent with UMP's debug geography set to the EEA, then on a real iPhone through TestFlight.
-- Swap in your real ad unit IDs only in the release build.
+- Expect few or no real ads until the app is live and the App Store listing is linked in AdMob.
 
 **E. Later: mediation**
 
-Once you have steady traffic, add AdMob mediation (e.g. AppLovin, Meta, Unity Ads) to raise fill rates and prices. The plugin supports all AdMob mediation networks. Skip it at launch.
+Once you have steady traffic, add AdMob mediation (e.g. AppLovin, Meta, Unity Ads) to raise fill rates and prices. Skip it at launch.
 
 ## Remove Ads purchase setup
 
-Sell Remove Ads as an Apple non-consumable, using the [godot-iap](https://hyochan.github.io/godot-iap) plugin (StoreKit 2, Godot 4.3+, iOS 15+, Xcode 16+). Add a Restore Purchases button, or App Review will reject the app.
+Remove Ads is an Apple non-consumable, built with StoreKit 2 (`ios/GameHaven/Purchases.swift`). Settings has Remove Ads and Restore Purchases buttons; App Review rejects an IAP without Restore.
 
 **A. App Store Connect**
 
 1. Sign the **Paid Apps Agreement** and add bank and tax details (needs ABN and GST registration; see `../research/australia-business-setup.md` §4).
 2. Apply for the **Small Business Program** (15% commission).
-3. In the app, go to Monetization → In-App Purchases and create a **Non-Consumable** with product ID `remove_ads_unlock_all`, price A$9.99, a display name and a review screenshot.
+3. In the app, go to Monetization → In-App Purchases and create a **Non-Consumable** with product ID `com.sachiri.gamehaven.removeads`, price A$0.99, a display name and a review screenshot.
 4. Create a **Sandbox tester** account for testing.
 
-**B. Plugin in Godot**
+**B. How the code works**
 
-1. Download `godot-iap-{version}.zip` from its GitHub Releases and copy `addons/godot-iap/` into the project's `addons/`.
-2. Enable it: Project → Project Settings → Plugins.
-3. Enable **GodotIap** in Project → Export → iOS → Plugins.
-4. Add a Node with `addons/godot-iap/godot_iap.gd` attached, named `GodotIapWrapper`. In the editor it runs in mock mode, so you can build the UI without a device.
+1. On launch, it fetches the product to show its local price (never hard-coded; other countries see their own price).
+2. On a verified purchase, it finishes the transaction and ads stop straight away.
+3. **Restore Purchases** syncs with the App Store and re-reads what the player owns.
+4. It checks owned purchases on every launch and listens for later changes (Ask to Buy approvals, Family Sharing, refunds), so a reinstall or a new iPhone stays ad-free.
 
-**C. Code**
+**C. Test**
 
-1. On launch, fetch the product to show its local price (never hard-code "A$9.99"; other countries see their own price).
-2. On purchase success, finish the transaction as non-consumable, save `ads_removed = true`, and hide ads straight away.
-3. **Restore Purchases** in Settings: call `get_available_purchases()`, and if `remove_ads_unlock_all` is there, set `ads_removed = true`.
-4. Also check owned purchases on every launch, so a reinstall or a new iPhone stays ad-free.
-
-**D. Test**
-
-- Test in the simulator with a StoreKit configuration file, then on a real iPhone via TestFlight with the sandbox tester. A Godot forum user reported a TestFlight build that never showed the payment sheet, so test early.
+- In the simulator, `ios/GameHaven.storekit` (set as the scheme's StoreKit configuration) lets you buy and restore without App Store Connect.
+- Then on a real iPhone via TestFlight with the sandbox tester.
 
 ## Privacy & compliance
 
 Most App Store rejections for ad-funded games come from the items below. Tick them off before submitting.
 
-- [ ] **Consent (UMP):** consent requested on every launch, ads only after UMP allows them, and a Privacy settings button that reopens the form.
-- [ ] **App Tracking Transparency:** `NSUserTrackingUsageDescription` set in plain words (e.g. "This lets us show you ads that are more relevant. Your choice doesn't affect the game."). Ask after consent, not on the first screen.
+- [x] **Consent (UMP):** consent requested on every launch, ads only after UMP allows them, and a Privacy settings button that reopens the form.
+- [x] **App Tracking Transparency:** `NSUserTrackingUsageDescription` set in plain words (e.g. "This lets us show you ads that are more relevant. Your choice doesn't affect the game."). Ask after consent, not on the first screen.
 - [ ] **App Privacy label** in App Store Connect declares what the AdMob SDK collects (device ID, usage data, crash data, coarse location), and whether it's used for tracking.
-- [ ] **Privacy manifest:** the AdMob and UMP SDKs ship their own; confirm they're in the exported Xcode project.
-- [ ] **SKAdNetworkItems** in Info.plist (see Ads setup, step B6).
-- [ ] **app-ads.txt:** host it at the root of the developer website listed on the App Store page, with the line AdMob gives you. Without it, many advertisers won't buy your ad space. (From memory; AdMob's console shows the exact line.)
-- [ ] **Privacy policy URL** on the App Store page and in the app's Settings, naming Google AdMob.
+- [ ] **Privacy manifest:** the AdMob and UMP SDKs ship their own; confirm they're in the archived build.
+- [x] **SKAdNetworkItems** in Info.plist (`ios/project.yml`; Google's own network only until mediation).
+- [ ] **app-ads.txt:** host it at the root of the developer website listed on the App Store page (GitHub Pages, from `docs/`), with the line AdMob gives you. Without it, many advertisers won't buy your ad space. (From memory; AdMob's console shows the exact line.)
+- [x] **Privacy policy:** <https://carlabarintos.github.io/game-haven/privacy.html> (source `docs/privacy.html`, also shown in the app's Settings). [ ] Add the URL to the App Store page.
 - [ ] **Not in the Kids category,** and age rating set honestly. Kids rules ban most ad SDKs.
 - [ ] **No health claims** in the listing ("prevents dementia"); Apple and the ACCC can act on them.
 - [ ] **GST:** Apple collects and pays GST on App Store sales in Australia, but the business still needs GST registration to sell paid apps or IAPs. Ad income from Google is a separate business income.
 
-Note: Google stops publishing the UMP CocoaPod from 2 December 2026. The Poing plugin downloads its own native files, so this should not affect us, but check after the next plugin update.
+Note: Google stops publishing the UMP CocoaPod from 2 December 2026. We use the Swift Package instead, so this doesn't affect us.
 
 ## Launch checklist
 
 Ship the six-game bundle in Australia first, watch reviews and ad complaints for a month, then open the US, Canada, NZ and UK.
 
-1. Build the shared card, grid and tile engines, then the six launch games.
-2. Add the accessibility settings (text size, high contrast, no timers).
-3. Set up the AdMob account, ad units and consent messages.
-4. Add the AdMob plugin with test IDs, and add rewarded hints first.
-5. Create the Remove Ads IAP and the Restore button.
-6. Write the privacy policy, App Privacy label and app-ads.txt.
+1. ~~Build the launch games.~~ Done: seven games (Nonogram added), plus the Yuzu Springs village.
+2. ~~Add the accessibility settings (text size, high contrast, no timers).~~ Done.
+3. Set up the AdMob account, ad units and consent messages. Account and interstitial unit done; consent messages still to publish.
+4. ~~Add the AdMob SDK with test IDs.~~ Done for between-games interstitials; rewarded hints not built.
+5. Create the Remove Ads IAP and the Restore button. Code done; create the product in App Store Connect.
+6. Write the privacy policy, App Privacy label and app-ads.txt. Policy done; label and app-ads.txt to do.
 7. TestFlight with 5–10 older testers (family, friends, a local seniors' club). Watch for accidental ad taps and confusing screens.
-8. Swap in real ad unit IDs and submit. Screenshot 1 shows the large text; the listing promises "Pay once, no ads".
+8. Submit (real ad IDs are already in the Release build). Screenshot 1 shows the large text; the listing promises "Pay once, no ads".
 9. After a month: check ad revenue per user, the Remove Ads buy rate and review complaints, then tune the ad frequency.
 10. Update 1: Five Hundred (500). Then open the other English markets.
 
 **Open questions**
 
 - [ ] One app with all games, or separate apps per game (better search ranking per keyword)?
-- [ ] Keep the banner or drop it entirely?
-- [ ] A$9.99 or A$14.99 for Remove Ads + Unlock All?
+- [ ] Add a banner at all? (Not built; launching without one.)
+- [x] Remove Ads price: A$0.99.
 
 ## Sources
 
@@ -202,7 +183,5 @@ Ship the six-game bundle in Australia first, watch reviews and ad complaints for
 - [Ofcom, *Adults' Media Use and Attitudes 2025*](https://www.ofcom.org.uk/siteassets/resources/documents/research-and-data/media-literacy-research/adults/adults-media-use-and-attitudes-2025/adults-media-use-and-attitudes-report-2025.pdf) (figure from a search extract)
 - [StatCounter, mobile OS market share](https://gs.statcounter.com/os-market-share/mobile/) (Oct 2026)
 - [Apple HIG, Accessibility](https://developer.apple.com/design/human-interface-guidelines/accessibility)
-- [Poing Studios AdMob plugin (Godot Asset Store)](https://store.godotengine.org/asset/poingstudios/admob/) and [GitHub](https://github.com/poingstudios/godot-admob-plugin)
-- [godot-iap docs](https://hyochan.github.io/godot-iap)
 - [Google AdMob iOS: test ads](https://developers.google.com/admob/ios/test-ads), [privacy (UMP)](https://developers.google.com/admob/ios/privacy), [quick start](https://developers.google.com/admob/ios/quick-start)
 - Full research notes with every figure and caveat: `../research/games-for-older-adults.md` (§1–8)
