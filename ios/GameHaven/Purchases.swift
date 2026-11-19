@@ -5,7 +5,7 @@ import StoreKit
 @Observable
 final class Purchases {
     static let shared = Purchases()
-    static let removeAdsID = "com.gamehaven.removeads"
+    static let removeAdsID = "com.sachiri.gamehaven.removeads"
 
     private(set) var adsRemoved = UserDefaults.standard.bool(forKey: "adsRemoved") {
         didSet { UserDefaults.standard.set(adsRemoved, forKey: "adsRemoved") }
