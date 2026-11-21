@@ -10,7 +10,7 @@ struct GameHavenApp: App {
         WindowGroup {
             NavigationStack {
                 #if DEBUG
-                // `-screen sudoku` (or solitaire, mahjong, jigsaw, dominoes, nonogram) at launch opens that screen directly, for simulator screenshots.
+                // `-screen sudoku` (or solitaire, mahjong, jigsaw, dominoes, nonogram, wordsearch, settings) at launch opens that screen directly, for simulator screenshots.
                 switch UserDefaults.standard.string(forKey: "screen") {
                 case "sudoku": SudokuView()
                 case "solitaire": SolitaireView()
@@ -18,6 +18,8 @@ struct GameHavenApp: App {
                 case "jigsaw": JigsawView()
                 case "dominoes": DominoesView()
                 case "nonogram": NonogramView()
+                case "wordsearch": WordSearchView()
+                case "settings": SettingsView()
                 default: HomeView()
                 }
                 #else

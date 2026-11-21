@@ -1,6 +1,6 @@
 # Senior Games App: Plan & Ads Setup
 
-Nov 17, 2026 · @Carl · updated Nov 19, 2026
+Nov 17, 2026 · @Carl · updated Nov 21, 2026
 
 ## Summary
 
@@ -142,12 +142,12 @@ Most App Store rejections for ad-funded games come from the items below. Tick th
 
 - [x] **Consent (UMP):** consent requested on every launch, ads only after UMP allows them, and a Privacy settings button that reopens the form.
 - [x] **App Tracking Transparency:** `NSUserTrackingUsageDescription` set in plain words (e.g. "This lets us show you ads that are more relevant. Your choice doesn't affect the game."). Ask after consent, not on the first screen.
-- [ ] **App Privacy label** in App Store Connect declares what the AdMob SDK collects (device ID, usage data, crash data, coarse location), and whether it's used for tracking.
+- [x] **App Privacy label** in App Store Connect declares what the AdMob SDK collects (device ID, usage data, crash data, coarse location), and whether it's used for tracking.
 - [ ] **Privacy manifest:** the AdMob and UMP SDKs ship their own; confirm they're in the archived build.
 - [x] **SKAdNetworkItems** in Info.plist (`ios/project.yml`; Google's own network only until mediation).
 - [ ] **app-ads.txt:** host it at the root of the developer website listed on the App Store page (GitHub Pages, from `docs/`), with the line AdMob gives you. Without it, many advertisers won't buy your ad space. (From memory; AdMob's console shows the exact line.)
-- [x] **Privacy policy:** <https://carlabarintos.github.io/game-haven/privacy.html> (source `docs/privacy.html`, also shown in the app's Settings). [ ] Add the URL to the App Store page.
-- [ ] **Not in the Kids category,** and age rating set honestly. Kids rules ban most ad SDKs.
+- [x] **Privacy policy:** <https://carlabarintos.github.io/game-haven/privacy.html> (source `docs/privacy.html`, also shown in the app's Settings). Also the App Store Support URL.
+- [x] **Not in the Kids category,** and age rating set honestly (all None except Advertising; override Not Applicable). Kids rules ban most ad SDKs.
 - [ ] **No health claims** in the listing ("prevents dementia"); Apple and the ACCC can act on them.
 - [ ] **GST:** Apple collects and pays GST on App Store sales in Australia, but the business still needs GST registration to sell paid apps or IAPs. Ad income from Google is a separate business income.
 
@@ -161,12 +161,23 @@ Ship the six-game bundle in Australia first, watch reviews and ad complaints for
 2. ~~Add the accessibility settings (text size, high contrast, no timers).~~ Done.
 3. Set up the AdMob account, ad units and consent messages. Account and interstitial unit done; consent messages still to publish.
 4. ~~Add the AdMob SDK with test IDs.~~ Done for between-games interstitials; rewarded hints not built.
-5. Create the Remove Ads IAP and the Restore button. Code done; create the product in App Store Connect.
-6. Write the privacy policy, App Privacy label and app-ads.txt. Policy done; label and app-ads.txt to do.
+5. ~~Create the Remove Ads IAP and the Restore button.~~ Done: `com.sachiri.gamehaven.removeads`, A$0.99, Family Sharing on. The App Store Connect product ID must match `Purchases.removeAdsID`.
+6. Write the privacy policy, App Privacy label and app-ads.txt. Policy and label done; app-ads.txt after approval.
 7. TestFlight with 5–10 older testers (family, friends, a local seniors' club). Watch for accidental ad taps and confusing screens.
-8. Submit (real ad IDs are already in the Release build). Screenshot 1 shows the large text; the listing promises "Pay once, no ads".
+8. ~~Submit.~~ Done Nov 21, 2026: 1.0 (build 2611190357) and Remove Ads submitted together, manual release. See *After approval* below.
 9. After a month: check ad revenue per user, the Remove Ads buy rate and review complaints, then tune the ad frequency.
 10. Update 1: Five Hundred (500). Then open the other English markets.
+
+### After approval
+
+1. **Release:** the version is set to manual release, so press **Release** on the 1.0 page in App Store Connect.
+2. **Link AdMob to the store listing:** AdMob → Apps → Game Haven → App settings → link to the App Store. Real ads only fill properly once linked.
+3. **app-ads.txt:** copy the line AdMob shows into `docs/app-ads.txt`, push, and check it loads at the root of the developer website on the store page. GitHub Pages serves this repo under `/game-haven/`, so the root file may need a user site (`carlabarintos.github.io`) repo or a custom domain.
+4. **Consent messages:** publish the GDPR (EEA/UK/Switzerland) and US state regulations messages in AdMob → Privacy & messaging.
+5. **Test the live app** on a real iPhone: buy Remove Ads, delete and reinstall, then Restore Purchases.
+6. **If rejected:** read the Resolution Center message, fix, upload a new build, and resubmit from the same version page.
+
+Store screenshots: compile the `*Logic.swift` files and `Save.swift` (as `ios/tests/run.sh` does) with a small script that writes each game's save (`Save.store`) for a mid-game board, copy the JSON into the simulator's `Library/Application Support/saves/`, and launch the Debug build with `-screen <game>` (or `settings` for the IAP review screenshot). Sizes: iPhone 18 Pro Max for 6.9", iPhone 18 Pro for 6.3", iPad Pro 13" for 13".
 
 **Open questions**
 
